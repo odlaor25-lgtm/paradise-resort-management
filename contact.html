@@ -1,0 +1,668 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดต่อเรา - Paradise Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .contact-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .contact-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border-left: 5px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn-contact {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .btn-contact:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-contact:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .map-container {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+        }
+        
+        .facebook { background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%); }
+        .instagram { background: linear-gradient(135deg, #e4405f 0%, #f77737 100%); }
+        .line { background: linear-gradient(135deg, #00c300 0%, #00b300 100%); }
+        .twitter { background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%); }
+        
+        .navbar {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .contact-bg {
+                padding: 1rem;
+            }
+            
+            .contact-card {
+                margin: 1rem 0;
+            }
+            
+            .info-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="navbar fixed w-full top-0 z-40 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <i class="fas fa-umbrella-beach text-white"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">Paradise Resort</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-700 hover:text-blue-600 transition-colors font-medium">หน้าหลัก</a>
+                <a href="booking.html" class="text-gray-700 hover:text-blue-600 transition-colors font-medium">จองห้อง</a>
+                <a href="#" class="text-blue-600 font-semibold">ติดต่อเรา</a>
+                <a href="admin.html" class="text-gray-700 hover:text-blue-600 transition-colors font-medium">ผู้ดูแล</a>
+            </div>
+            
+            <div class="md:hidden">
+                <button id="mobileMenuBtn" class="text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t mt-3 py-4">
+            <div class="container mx-auto px-4 space-y-3">
+                <a href="index.html" class="block text-gray-700 hover:text-blue-600 transition-colors">หน้าหลัก</a>
+                <a href="booking.html" class="block text-gray-700 hover:text-blue-600 transition-colors">จองห้อง</a>
+                <a href="#" class="block text-blue-600 font-semibold">ติดต่อเรา</a>
+                <a href="admin.html" class="block text-gray-700 hover:text-blue-600 transition-colors">ผู้ดูแล</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="contact-bg pt-20 pb-10 relative">
+        <!-- Floating Elements -->
+        <div class="floating-elements">
+            <i class="floating-element fas fa-envelope text-6xl" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
+            <i class="floating-element fas fa-phone text-4xl" style="top: 20%; right: 15%; animation-delay: 1s;"></i>
+            <i class="floating-element fas fa-map-marker-alt text-5xl" style="bottom: 30%; left: 20%; animation-delay: 2s;"></i>
+            <i class="floating-element fas fa-comments text-4xl" style="bottom: 20%; right: 10%; animation-delay: 3s;"></i>
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <!-- Page Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold text-white mb-4">ติดต่อเรา</h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                    เรายินดีให้บริการและตอบคำถามของคุณตลอด 24 ชั่วโมง
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Contact Form -->
+                <div class="contact-card p-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">ส่งข้อความถึงเรา</h2>
+                    
+                    <!-- Success/Error Messages -->
+                    <div id="successMessage" class="success-message">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        ข้อความของคุณถูกส่งเรียบร้อยแล้ว เราจะติดต่อกลับภายใน 24 ชั่วโมง
+                    </div>
+                    
+                    <div id="errorMessage" class="error-message">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง
+                    </div>
+                    
+                    <form id="contactForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ *</label>
+                                <input type="text" name="firstName" class="form-input" placeholder="ชื่อของคุณ" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">นามสกุล *</label>
+                                <input type="text" name="lastName" class="form-input" placeholder="นามสกุลของคุณ" required>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">อีเมล *</label>
+                            <input type="email" name="email" class="form-input" placeholder="your@email.com" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์</label>
+                            <input type="tel" name="phone" class="form-input" placeholder="08X-XXX-XXXX">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">หัวข้อ *</label>
+                            <select name="subject" class="form-input" required>
+                                <option value="">เลือกหัวข้อ</option>
+                                <option value="booking">สอบถามการจอง</option>
+                                <option value="complaint">ร้องเรียน</option>
+                                <option value="suggestion">ข้อเสนอแนะ</option>
+                                <option value="general">ทั่วไป</option>
+                                <option value="partnership">ความร่วมมือ</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">ข้อความ *</label>
+                            <textarea name="message" class="form-input form-textarea" placeholder="เขียนข้อความของคุณที่นี่..." required></textarea>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="privacy" name="privacy" class="mr-3 w-4 h-4 text-blue-600" required>
+                            <label for="privacy" class="text-sm text-gray-600">
+                                ฉันยอมรับ <a href="#" class="text-blue-600 hover:underline">นโยบายความเป็นส่วนตัว</a> และ <a href="#" class="text-blue-600 hover:underline">เงื่อนไขการใช้งาน</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-contact">
+                            <i class="fas fa-paper-plane mr-2"></i>ส่งข้อความ
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="space-y-6">
+                    <!-- Address -->
+                    <div class="info-card">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">ที่อยู่</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    123 หาดใหญ่ ถนนชายหาด<br>
+                                    ตำบลบ่อผุด อำเภอเกาะสมุย<br>
+                                    จังหวัดสุราษฎร์ธานี 84320
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="info-card">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-phone text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">โทรศัพท์</h3>
+                                <p class="text-gray-600">
+                                    <a href="tel:+66771234567" class="hover:text-blue-600 transition-colors">077-123-4567</a><br>
+                                    <a href="tel:+66891234567" class="hover:text-blue-600 transition-colors">089-123-4567</a>
+                                </p>
+                                <p class="text-sm text-gray-500 mt-1">เปิดบริการ 24 ชั่วโมง</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="info-card">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-envelope text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">อีเมล</h3>
+                                <p class="text-gray-600">
+                                    <a href="mailto:info@paradiseresort.com" class="hover:text-blue-600 transition-colors">info@paradiseresort.com</a><br>
+                                    <a href="mailto:booking@paradiseresort.com" class="hover:text-blue-600 transition-colors">booking@paradiseresort.com</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Media -->
+                    <div class="info-card">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-share-alt text-orange-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-3">ติดตามเรา</h3>
+                                <div class="flex space-x-3">
+                                    <div class="social-icon facebook" onclick="openSocial('facebook')">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </div>
+                                    <div class="social-icon instagram" onclick="openSocial('instagram')">
+                                        <i class="fab fa-instagram"></i>
+                                    </div>
+                                    <div class="social-icon line" onclick="openSocial('line')">
+                                        <i class="fab fa-line"></i>
+                                    </div>
+                                    <div class="social-icon twitter" onclick="openSocial('twitter')">
+                                        <i class="fab fa-twitter"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="contact-card p-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">แผนที่</h2>
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.2!2d100.0!3d9.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOcKwMzAnMDAuMCJOIDEwMMKwMDAnMDAuMCJF!5e0!3m2!1sth!2sth!4v1234567890"
+                        width="100%" 
+                        height="400" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600 mb-4">
+                        Paradise Resort ตั้งอยู่ในทำเลที่สวยงาม ริมหาดทรายขาว มีวิวทะเลที่งดงาม
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-car mr-2 text-blue-600"></i>
+                            <span>ที่จอดรถฟรี</span>
+                        </div>
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-plane mr-2 text-blue-600"></i>
+                            <span>ห่างจากสนามบิน 15 นาที</span>
+                        </div>
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-ship mr-2 text-blue-600"></i>
+                            <span>ใกล้ท่าเรือ 5 นาที</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="contact-card p-8 mt-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">คำถามที่พบบ่อย</h2>
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg">
+                        <button class="faq-question w-full text-left p-4 font-semibold text-gray-800 hover:bg-gray-50 flex justify-between items-center" onclick="toggleFAQ(0)">
+                            <span>เช็คอินและเช็คเอาท์เวลาไหน?</span>
+                            <i class="fas fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div class="faq-answer hidden p-4 pt-0 text-gray-600">
+                            <p>เช็คอิน: 14:00 น. | เช็คเอาท์: 12:00 น. (สามารถขอเช็คอินเร็วหรือเช็คเอาท์สายได้โดยแจ้งล่วงหน้า)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg">
+                        <button class="faq-question w-full text-left p-4 font-semibold text-gray-800 hover:bg-gray-50 flex justify-between items-center" onclick="toggleFAQ(1)">
+                            <span>มีบริการรับส่งสนามบินไหม?</span>
+                            <i class="fas fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div class="faq-answer hidden p-4 pt-0 text-gray-600">
+                            <p>มีบริการรับส่งสนามบินฟรีสำหรับผู้เข้าพักทุกท่าน โดยต้องแจ้งล่วงหน้าอย่างน้อย 24 ชั่วโมง</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg">
+                        <button class="faq-question w-full text-left p-4 font-semibold text-gray-800 hover:bg-gray-50 flex justify-between items-center" onclick="toggleFAQ(2)">
+                            <span>สามารถยกเลิกการจองได้ไหม?</span>
+                            <i class="fas fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div class="faq-answer hidden p-4 pt-0 text-gray-600">
+                            <p>สามารถยกเลิกได้ฟรีก่อนวันเข้าพัก 48 ชั่วโมง หากยกเลิกภายใน 48 ชั่วโมงจะมีค่าธรรมเนียม 50% ของราคาห้อง</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg">
+                        <button class="faq-question w-full text-left p-4 font-semibold text-gray-800 hover:bg-gray-50 flex justify-between items-center" onclick="toggleFAQ(3)">
+                            <span>มีสิ่งอำนวยความสะดวกอะไรบ้าง?</span>
+                            <i class="fas fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div class="faq-answer hidden p-4 pt-0 text-gray-600">
+                            <p>สระว่ายน้ำ, ฟิตเนส, สปา, ร้านอาหาร, บาร์, WiFi ฟรี, ที่จอดรถฟรี, บริการซักรีด, และกิจกรรมทางน้ำ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-umbrella-beach text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold">Paradise Resort</span>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        รีสอร์ทหรูริมทะเลที่มอบประสบการณ์พักผ่อนที่ไม่เหมือนใคร
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">ลิงก์ด่วน</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">หน้าหลัก</a></li>
+                        <li><a href="booking.html" class="text-gray-400 hover:text-white transition-colors">จองห้อง</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">ติดต่อเรา</a></li>
+                        <li><a href="admin.html" class="text-gray-400 hover:text-white transition-colors">ผู้ดูแล</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">บริการ</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">สปา & นวดแผนไทย</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">ร้านอาหาร</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">กิจกรรมทางน้ำ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">ห้องประชุม</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">ติดต่อเรา</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            077-123-4567
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            info@paradiseresort.com
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            เกาะสมุย สุราษฎร์ธานี
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 Paradise Resort. สงวนลิขสิทธิ์ทุกประการ.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังส่ง...';
+            submitBtn.disabled = true;
+            
+            // Hide previous messages
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Simulate form submission
+            setTimeout(() => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Reset form
+                this.reset();
+                
+                // Scroll to success message
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 2000);
+        });
+
+        // FAQ toggle
+        function toggleFAQ(index) {
+            const questions = document.querySelectorAll('.faq-question');
+            const answers = document.querySelectorAll('.faq-answer');
+            const icons = document.querySelectorAll('.faq-question i');
+            
+            // Close all other FAQs
+            answers.forEach((answer, i) => {
+                if (i !== index) {
+                    answer.classList.add('hidden');
+                    icons[i].style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Toggle current FAQ
+            answers[index].classList.toggle('hidden');
+            const isOpen = !answers[index].classList.contains('hidden');
+            icons[index].style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        // Social media links
+        function openSocial(platform) {
+            const urls = {
+                facebook: 'https://facebook.com/paradiseresort',
+                instagram: 'https://instagram.com/paradiseresort',
+                line: 'https://line.me/ti/p/@paradiseresort',
+                twitter: 'https://twitter.com/paradiseresort'
+            };
+            
+            if (urls[platform]) {
+                window.open(urls[platform], '_blank');
+            }
+        }
+
+        // Form validation
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.hasAttribute('required') && !this.value.trim()) {
+                    this.style.borderColor = '#ef4444';
+                } else {
+                    this.style.borderColor = '#e5e7eb';
+                }
+            });
+            
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#3b82f6';
+            });
+        });
+
+        // Email validation
+        document.querySelector('input[name="email"]').addEventListener('blur', function() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailRegex.test(this.value)) {
+                this.style.borderColor = '#ef4444';
+            }
+        });
+
+        // Phone validation
+        document.querySelector('input[name="phone"]').addEventListener('input', function() {
+            // Remove non-numeric characters except + and -
+            this.value = this.value.replace(/[^\d+\-]/g, '');
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add floating animation to elements
+        function addFloatingAnimation() {
+            const elements = document.querySelectorAll('.floating-element');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.5}s`;
+            });
+        }
+
+        // Initialize animations on load
+        document.addEventListener('DOMContentLoaded', function() {
+            addFloatingAnimation();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9811ab33b5d59fdd',t:'MTc1ODIwNzE2My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

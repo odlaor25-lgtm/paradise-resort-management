@@ -1,0 +1,819 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงาน - Paradise Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .reports-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .filter-section {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-report {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-print {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 8px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .navbar {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .print-only {
+                display: block !important;
+            }
+            
+            body {
+                background: white !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .reports-bg {
+                padding: 1rem;
+            }
+            
+            .filter-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="navbar fixed w-full top-0 z-40 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <i class="fas fa-chart-bar text-white"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">รายงาน Paradise Resort</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="exportToPDF()" class="btn-report btn-export no-print">
+                    <i class="fas fa-file-pdf mr-2"></i>ส่งออก PDF
+                </button>
+                <button onclick="printReport()" class="btn-report btn-print no-print">
+                    <i class="fas fa-print mr-2"></i>พิมพ์
+                </button>
+                <a href="admin.html" class="text-gray-700 hover:text-blue-600 transition-colors font-medium no-print">
+                    <i class="fas fa-arrow-left mr-2"></i>กลับ
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="reports-bg pt-20 pb-10">
+        <div class="container mx-auto px-4">
+            <!-- Page Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-4">รายงานประจำเดือน</h1>
+                <p class="text-xl text-gray-300" id="reportPeriod">มีนาคม 2567</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-section no-print">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">เลือกช่วงเวลา</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทรายงาน</label>
+                        <select id="reportType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="updateReport()">
+                            <option value="monthly">รายเดือน</option>
+                            <option value="weekly">รายสัปดาห์</option>
+                            <option value="daily">รายวัน</option>
+                            <option value="yearly">รายปี</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">วันที่เริ่มต้น</label>
+                        <input type="date" id="startDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="updateReport()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">วันที่สิ้นสุด</label>
+                        <input type="date" id="endDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="updateReport()">
+                    </div>
+                    <div class="flex items-end">
+                        <button class="btn-report w-full" onclick="generateReport()">
+                            <i class="fas fa-sync-alt mr-2"></i>อัปเดตรายงาน
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-money-bill-wave text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>+12.5%
+                        </span>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-1">รายได้รวม</h3>
+                    <p class="text-2xl font-bold text-gray-900" id="totalRevenue">฿2,450,000</p>
+                    <p class="text-xs text-gray-500 mt-1">เปรียบเทียบเดือนก่อน</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>+8.3%
+                        </span>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-1">การจองทั้งหมด</h3>
+                    <p class="text-2xl font-bold text-gray-900" id="totalBookings">342</p>
+                    <p class="text-xs text-gray-500 mt-1">การจองในช่วงเวลานี้</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-percentage text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="trend-down text-sm font-medium">
+                            <i class="fas fa-arrow-down mr-1"></i>-2.1%
+                        </span>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-1">อัตราการเข้าพัก</h3>
+                    <p class="text-2xl font-bold text-gray-900" id="occupancyRate">87.5%</p>
+                    <p class="text-xs text-gray-500 mt-1">เฉลี่ยของเดือน</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-star text-orange-600 text-xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>+0.3
+                        </span>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-600 mb-1">คะแนนความพึงพอใจ</h3>
+                    <p class="text-2xl font-bold text-gray-900" id="satisfactionScore">4.7</p>
+                    <p class="text-xs text-gray-500 mt-1">จาก 5 คะแนน</p>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Revenue Chart -->
+                <div class="chart-container">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">รายได้รายวัน</h3>
+                        <div class="flex space-x-2">
+                            <button class="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-full" onclick="changeChartPeriod('daily')">รายวัน</button>
+                            <button class="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-full" onclick="changeChartPeriod('weekly')">รายสัปดาห์</button>
+                        </div>
+                    </div>
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+
+                <!-- Occupancy Chart -->
+                <div class="chart-container">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">อัตราการเข้าพักตามประเภทห้อง</h3>
+                    <canvas id="occupancyChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Booking Analysis -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Booking Sources -->
+                <div class="chart-container">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">แหล่งที่มาของการจอง</h3>
+                    <canvas id="bookingSourceChart" height="250"></canvas>
+                </div>
+
+                <!-- Room Performance -->
+                <div class="chart-container">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">ประสิทธิภาพห้องพัก</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Deluxe Ocean View</span>
+                                <span class="text-sm font-bold text-blue-600">92%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Presidential Suite</span>
+                                <span class="text-sm font-bold text-blue-600">78%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Garden View Standard</span>
+                                <span class="text-sm font-bold text-blue-600">95%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 95%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Satisfaction -->
+                <div class="chart-container">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">ความพึงพอใจลูกค้า</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">ความสะอาด</span>
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-sm font-bold">4.8</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">บริการ</span>
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="text-sm font-bold">4.6</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">สิ่งอำนวยความสะดวก</span>
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-sm font-bold">4.9</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">ความคุ้มค่า</span>
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                                <span class="text-sm font-bold">4.2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Tables -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Top Customers -->
+                <div class="table-container">
+                    <div class="p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-800">ลูกค้าอันดับต้น</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ลูกค้า</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จำนวนการจอง</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ยอดเงิน</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">S</div>
+                                            <span class="text-sm font-medium text-gray-900">สมชาย ใจดี</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿145,600</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">W</div>
+                                            <span class="text-sm font-medium text-gray-900">วิภา สุขใส</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿98,400</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">A</div>
+                                            <span class="text-sm font-medium text-gray-900">อนุชา รักดี</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿76,200</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Revenue by Room Type -->
+                <div class="table-container">
+                    <div class="p-6 border-b">
+                        <h3 class="text-xl font-bold text-gray-800">รายได้ตามประเภทห้อง</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ประเภทห้อง</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จำนวนการจอง</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">รายได้</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สัดส่วน</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Deluxe Ocean View</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">156 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿1,248,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">51%</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Garden View Standard</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">142 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿756,400</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">31%</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Presidential Suite</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">44 ครั้ง</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿445,600</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Report -->
+            <div class="report-card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">สรุปผลการดำเนินงาน</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">จุดแข็ง</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                รายได้เพิ่มขึ้น 12.5% เมื่อเทียบกับเดือนก่อน
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                อัตราการเข้าพักห้อง Standard สูงถึง 95%
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                คะแนนความพึงพอใจเพิ่มขึ้นเป็น 4.7/5
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                ลูกค้าประจำเพิ่มขึ้น 8.3%
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">จุดที่ควรปรับปรุง</h3>
+                        <ul class="space-y-2 text-gray-600">
+                            <li class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                อัตราการเข้าพัก Suite ยังต่ำ (78%)
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                คะแนนความคุ้มค่าต่ำสุด (4.2/5)
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                การจองผ่านเว็บไซต์ลดลง 5%
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                                ต้นทุนการดำเนินงานเพิ่มขึ้น 3%
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-6 bg-blue-50 rounded-15">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-3">ข้อเสนอแนะ</h3>
+                    <div class="text-blue-700 space-y-2">
+                        <p>• จัดโปรโมชั่นพิเศษสำหรับห้อง Presidential Suite เพื่อเพิ่มอัตราการเข้าพัก</p>
+                        <p>• ปรับปรุงแพ็กเกจเพื่อเพิ่มความคุ้มค่าให้กับลูกค้า</p>
+                        <p>• เพิ่มช่องทางการตลาดออนไลน์เพื่อดึงดูดลูกค้าใหม่</p>
+                        <p>• ควบคุมต้นทุนการดำเนินงานให้มีประสิทธิภาพมากขึ้น</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Header (Hidden by default) -->
+    <div class="print-only hidden">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Paradise Resort</h1>
+            <h2 class="text-xl text-gray-600">รายงานประจำเดือน มีนาคม 2567</h2>
+            <p class="text-gray-500">วันที่พิมพ์: <span id="printDate"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDates();
+            initializeCharts();
+            updatePrintDate();
+        });
+
+        function initializeDates() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('endDate').value = lastDay.toISOString().split('T')[0];
+        }
+
+        function updatePrintDate() {
+            const now = new Date();
+            document.getElementById('printDate').textContent = now.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1', '5', '10', '15', '20', '25', '30'],
+                    datasets: [{
+                        label: 'รายได้ (บาท)',
+                        data: [65000, 78000, 85000, 92000, 88000, 95000, 102000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '฿' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Occupancy Chart
+            const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+            new Chart(occupancyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deluxe Ocean View', 'Garden View Standard', 'Presidential Suite'],
+                    datasets: [{
+                        data: [92, 95, 78],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Booking Source Chart
+            const sourceCtx = document.getElementById('bookingSourceChart').getContext('2d');
+            new Chart(sourceCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['เว็บไซต์', 'โทรศัพท์', 'Walk-in', 'OTA', 'Agent'],
+                    datasets: [{
+                        data: [35, 25, 15, 20, 5],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Update report period display
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            let periodText = '';
+            switch(reportType) {
+                case 'daily':
+                    periodText = start.toLocaleDateString('th-TH');
+                    break;
+                case 'weekly':
+                    periodText = `สัปดาห์ที่ ${getWeekNumber(start)} ปี ${start.getFullYear() + 543}`;
+                    break;
+                case 'monthly':
+                    periodText = start.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+                    break;
+                case 'yearly':
+                    periodText = `ปี ${start.getFullYear() + 543}`;
+                    break;
+            }
+            
+            document.getElementById('reportPeriod').textContent = periodText;
+        }
+
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
+
+        function generateReport() {
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังสร้างรายงาน...';
+            button.disabled = true;
+            
+            // Simulate report generation
+            setTimeout(() => {
+                // Update metrics with new data
+                animateCounter('totalRevenue', 2450000, '฿');
+                animateCounter('totalBookings', 342, '');
+                animateCounter('occupancyRate', 87.5, '%');
+                animateCounter('satisfactionScore', 4.7, '');
+                
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Show success message
+                showNotification('รายงานได้รับการอัปเดตแล้ว', 'success');
+            }, 2000);
+        }
+
+        function animateCounter(elementId, targetValue, suffix) {
+            const element = document.getElementById(elementId);
+            const startValue = 0;
+            const duration = 1000;
+            const startTime = performance.now();
+            
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = startValue + (targetValue - startValue) * progress;
+                
+                if (suffix === '฿') {
+                    element.textContent = '฿' + Math.floor(currentValue).toLocaleString();
+                } else if (suffix === '%') {
+                    element.textContent = currentValue.toFixed(1) + '%';
+                } else {
+                    element.textContent = Math.floor(currentValue).toLocaleString() + suffix;
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                }
+            }
+            
+            requestAnimationFrame(updateCounter);
+        }
+
+        function changeChartPeriod(period) {
+            // Update chart period buttons
+            event.target.parentNode.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('bg-blue-100', 'text-blue-600');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            
+            event.target.classList.remove('bg-gray-100', 'text-gray-600');
+            event.target.classList.add('bg-blue-100', 'text-blue-600');
+            
+            // Here you would update the chart data based on the selected period
+            console.log('Changing chart period to:', period);
+        }
+
+        function exportToPDF() {
+            // Show loading
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังสร้าง PDF...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Simulate PDF download
+                const link = document.createElement('a');
+                link.href = '#';
+                link.download = 'paradise-resort-report.pdf';
+                link.click();
+                
+                showNotification('ไฟล์ PDF ได้รับการสร้างแล้ว', 'success');
+            }, 2000);
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Auto-update report when filters change
+        document.getElementById('reportType').addEventListener('change', updateReport);
+        document.getElementById('startDate').addEventListener('change', updateReport);
+        document.getElementById('endDate').addEventListener('change', updateReport);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9811a26976080884',t:'MTc1ODIwNjgwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

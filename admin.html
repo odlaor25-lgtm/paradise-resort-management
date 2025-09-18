@@ -1,0 +1,764 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบผู้ดูแล - Paradise Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            min-height: 100vh;
+        }
+        
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+            min-height: calc(100vh - 80px);
+        }
+        
+        .sidebar-item {
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar-item:hover, .sidebar-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: #60a5fa;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-admin {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 80px;
+                width: 250px;
+                z-index: 50;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-40 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <button id="sidebarToggle" class="md:hidden text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Admin Panel</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-gray-600 hover:text-blue-600 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%234f46e5'/%3E%3Ctext x='20' y='26' text-anchor='middle' fill='white' font-size='16' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="Admin" class="w-10 h-10 rounded-full">
+                    <span class="text-gray-700 font-medium">ผู้ดูแลระบบ</span>
+                </div>
+                <a href="index.html" class="text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-bg pt-20">
+        <div class="flex">
+            <!-- Sidebar -->
+            <div id="sidebar" class="sidebar w-64 flex-shrink-0">
+                <div class="p-6">
+                    <h3 class="text-white font-bold text-lg mb-4">เมนูจัดการ</h3>
+                    <nav class="space-y-2">
+                        <div class="sidebar-item active" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt mr-3"></i>แดชบอร์ด
+                        </div>
+                        <div class="sidebar-item" onclick="showSection('bookings')">
+                            <i class="fas fa-calendar-check mr-3"></i>จัดการการจอง
+                        </div>
+                        <div class="sidebar-item" onclick="showSection('rooms')">
+                            <i class="fas fa-bed mr-3"></i>จัดการห้องพัก
+                        </div>
+                        <div class="sidebar-item" onclick="showSection('customers')">
+                            <i class="fas fa-users mr-3"></i>ข้อมูลลูกค้า
+                        </div>
+                        <div class="sidebar-item" onclick="showSection('reports')">
+                            <i class="fas fa-chart-bar mr-3"></i>รายงาน
+                        </div>
+                        <div class="sidebar-item" onclick="showSection('settings')">
+                            <i class="fas fa-cog mr-3"></i>ตั้งค่าระบบ
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content flex-1 p-6 ml-0 md:ml-0">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section-content">
+                    <h1 class="text-3xl font-bold text-white mb-8">แดชบอร์ด</h1>
+                    
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">การจองวันนี้</p>
+                                    <p class="text-3xl font-bold text-blue-600">24</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-calendar-plus text-blue-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">ห้องที่ว่าง</p>
+                                    <p class="text-3xl font-bold text-green-600">15</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-bed text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">รายได้วันนี้</p>
+                                    <p class="text-3xl font-bold text-purple-600">฿125,400</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-money-bill-wave text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">อัตราการเข้าพัก</p>
+                                    <p class="text-3xl font-bold text-orange-600">85%</p>
+                                </div>
+                                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-chart-pie text-orange-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="chart-container">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">รายได้รายเดือน</h3>
+                            <canvas id="revenueChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">อัตราการเข้าพัก</h3>
+                            <canvas id="occupancyChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Bookings -->
+                    <div class="table-container">
+                        <div class="p-6 border-b">
+                            <h3 class="text-xl font-bold text-gray-800">การจองล่าสุด</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">หมายเลขจอง</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ลูกค้า</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ห้อง</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">วันที่</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สถานะ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ยอดเงิน</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#PR2024001</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">สมชาย ใจดี</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Deluxe Ocean View</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15-20 มี.ค. 67</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge status-confirmed">ยืนยันแล้ว</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">฿17,500</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#PR2024002</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">วิภา สุขใส</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Presidential Suite</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">18-22 มี.ค. 67</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="status-badge status-pending">รอชำระ</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">฿34,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Section -->
+                <div id="bookings" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <h1 class="text-3xl font-bold text-white">จัดการการจอง</h1>
+                        <button class="btn-admin" onclick="showAddBookingModal()">
+                            <i class="fas fa-plus mr-2"></i>เพิ่มการจอง
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white rounded-15 p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">สถานะ</label>
+                                <select class="w-full p-2 border border-gray-300 rounded-lg">
+                                    <option>ทั้งหมด</option>
+                                    <option>ยืนยันแล้ว</option>
+                                    <option>รอชำระ</option>
+                                    <option>ยกเลิก</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">วันที่เริ่ม</label>
+                                <input type="date" class="w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">วันที่สิ้นสุด</label>
+                                <input type="date" class="w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div class="flex items-end">
+                                <button class="btn-admin w-full">
+                                    <i class="fas fa-search mr-2"></i>ค้นหา
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bookings Table -->
+                    <div class="table-container">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">หมายเลขจอง</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ลูกค้า</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ห้อง</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">วันที่เข้าพัก</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สถานะ</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ยอดเงิน</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200" id="bookingsTableBody">
+                                    <!-- Bookings will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooms Section -->
+                <div id="rooms" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <h1 class="text-3xl font-bold text-white">จัดการห้องพัก</h1>
+                        <button class="btn-admin" onclick="showAddRoomModal()">
+                            <i class="fas fa-plus mr-2"></i>เพิ่มห้องพัก
+                        </button>
+                    </div>
+
+                    <!-- Room Status Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="stat-card">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">ห้องทั้งหมด</h3>
+                            <p class="text-3xl font-bold text-blue-600">50</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">ห้องว่าง</h3>
+                            <p class="text-3xl font-bold text-green-600">15</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">ห้องไม่พร้อม</h3>
+                            <p class="text-3xl font-bold text-red-600">2</p>
+                        </div>
+                    </div>
+
+                    <!-- Rooms Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="roomsGrid">
+                        <!-- Rooms will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Other sections would continue here... -->
+                <div id="customers" class="section-content hidden">
+                    <h1 class="text-3xl font-bold text-white mb-8">ข้อมูลลูกค้า</h1>
+                    <div class="bg-white rounded-15 p-6">
+                        <p class="text-gray-600">ส่วนข้อมูลลูกค้า กำลังพัฒนา...</p>
+                    </div>
+                </div>
+
+                <div id="reports" class="section-content hidden">
+                    <h1 class="text-3xl font-bold text-white mb-8">รายงาน</h1>
+                    <div class="bg-white rounded-15 p-6">
+                        <p class="text-gray-600">ส่วนรายงาน กำลังพัฒนา...</p>
+                    </div>
+                </div>
+
+                <div id="settings" class="section-content hidden">
+                    <h1 class="text-3xl font-bold text-white mb-8">ตั้งค่าระบบ</h1>
+                    <div class="bg-white rounded-15 p-6">
+                        <p class="text-gray-600">ส่วนตั้งค่าระบบ กำลังพัฒนา...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addBookingModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">เพิ่มการจองใหม่</h3>
+            <form id="addBookingForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อลูกค้า</label>
+                        <input type="text" class="w-full p-2 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทห้อง</label>
+                        <select class="w-full p-2 border border-gray-300 rounded-lg" required>
+                            <option value="">เลือกประเภทห้อง</option>
+                            <option value="standard">Standard</option>
+                            <option value="deluxe">Deluxe</option>
+                            <option value="suite">Suite</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">วันที่เช็คอิน</label>
+                            <input type="date" class="w-full p-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">วันที่เช็คเอาท์</label>
+                            <input type="date" class="w-full p-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="button" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50" onclick="closeModal('addBookingModal')">ยกเลิก</button>
+                    <button type="submit" class="btn-admin">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 'dashboard';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            loadBookingsData();
+            loadRoomsData();
+            initializeCharts();
+        });
+
+        // Sidebar functionality
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.remove('hidden');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentSection = sectionName;
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
+
+        // Mobile sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Load dashboard data
+        function loadDashboardData() {
+            // Simulate loading dashboard stats
+            console.log('Loading dashboard data...');
+        }
+
+        // Load bookings data
+        function loadBookingsData() {
+            const bookingsData = [
+                {
+                    id: 'PR2024001',
+                    customer: 'สมชาย ใจดี',
+                    room: 'Deluxe Ocean View',
+                    dates: '15-20 มี.ค. 67',
+                    status: 'confirmed',
+                    amount: '฿17,500'
+                },
+                {
+                    id: 'PR2024002',
+                    customer: 'วิภา สุขใส',
+                    room: 'Presidential Suite',
+                    dates: '18-22 มี.ค. 67',
+                    status: 'pending',
+                    amount: '฿34,000'
+                },
+                {
+                    id: 'PR2024003',
+                    customer: 'อนุชา รักดี',
+                    room: 'Garden View Standard',
+                    dates: '20-23 มี.ค. 67',
+                    status: 'cancelled',
+                    amount: '฿6,600'
+                }
+            ];
+
+            const tbody = document.getElementById('bookingsTableBody');
+            tbody.innerHTML = '';
+
+            bookingsData.forEach(booking => {
+                const statusClass = {
+                    'confirmed': 'status-confirmed',
+                    'pending': 'status-pending',
+                    'cancelled': 'status-cancelled'
+                };
+
+                const statusText = {
+                    'confirmed': 'ยืนยันแล้ว',
+                    'pending': 'รอชำระ',
+                    'cancelled': 'ยกเลิก'
+                };
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${booking.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${booking.customer}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${booking.room}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${booking.dates}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${statusClass[booking.status]}">${statusText[booking.status]}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.amount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                        <button class="btn-admin btn-success" onclick="editBooking('${booking.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-admin btn-danger" onclick="deleteBooking('${booking.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load rooms data
+        function loadRoomsData() {
+            const roomsData = [
+                { number: '101', type: 'Standard', status: 'available', price: '฿2,200' },
+                { number: '102', type: 'Standard', status: 'occupied', price: '฿2,200' },
+                { number: '201', type: 'Deluxe', status: 'available', price: '฿3,500' },
+                { number: '301', type: 'Suite', status: 'maintenance', price: '฿8,500' }
+            ];
+
+            const roomsGrid = document.getElementById('roomsGrid');
+            roomsGrid.innerHTML = '';
+
+            roomsData.forEach(room => {
+                const statusColor = {
+                    'available': 'bg-green-100 text-green-800',
+                    'occupied': 'bg-red-100 text-red-800',
+                    'maintenance': 'bg-yellow-100 text-yellow-800'
+                };
+
+                const statusText = {
+                    'available': 'ว่าง',
+                    'occupied': 'มีผู้เข้าพัก',
+                    'maintenance': 'ซ่อมแซม'
+                };
+
+                const roomCard = document.createElement('div');
+                roomCard.className = 'stat-card';
+                roomCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">ห้อง ${room.number}</h3>
+                            <p class="text-gray-600">${room.type}</p>
+                        </div>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColor[room.status]}">
+                            ${statusText[room.status]}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold text-blue-600">${room.price}</span>
+                        <div class="space-x-2">
+                            <button class="btn-admin btn-success" onclick="editRoom('${room.number}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-admin btn-danger" onclick="deleteRoom('${room.number}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                roomsGrid.appendChild(roomCard);
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.'],
+                    datasets: [{
+                        label: 'รายได้ (บาท)',
+                        data: [1200000, 1500000, 1800000, 1600000, 2000000, 2200000],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Occupancy Chart
+            const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+            new Chart(occupancyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['เข้าพัก', 'ว่าง', 'ซ่อมแซม'],
+                    datasets: [{
+                        data: [35, 13, 2],
+                        backgroundColor: ['#ef4444', '#10b981', '#f59e0b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Modal functions
+        function showAddBookingModal() {
+            document.getElementById('addBookingModal').classList.add('active');
+        }
+
+        function showAddRoomModal() {
+            // Implementation for add room modal
+            alert('เพิ่มห้องพัก - ฟีเจอร์กำลังพัฒนา');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // CRUD functions
+        function editBooking(bookingId) {
+            alert(`แก้ไขการจอง ${bookingId} - ฟีเจอร์กำลังพัฒนา`);
+        }
+
+        function deleteBooking(bookingId) {
+            if (confirm(`ต้องการลบการจอง ${bookingId} หรือไม่?`)) {
+                alert('ลบการจองสำเร็จ');
+                loadBookingsData();
+            }
+        }
+
+        function editRoom(roomNumber) {
+            alert(`แก้ไขห้อง ${roomNumber} - ฟีเจอร์กำลังพัฒนา`);
+        }
+
+        function deleteRoom(roomNumber) {
+            if (confirm(`ต้องการลบห้อง ${roomNumber} หรือไม่?`)) {
+                alert('ลบห้องสำเร็จ');
+                loadRoomsData();
+            }
+        }
+
+        // Form submissions
+        document.getElementById('addBookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('เพิ่มการจองสำเร็จ');
+            closeModal('addBookingModal');
+            loadBookingsData();
+        });
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981197bbc4c75cec',t:'MTc1ODIwNjM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

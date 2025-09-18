@@ -1,0 +1,1083 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองห้องพัก - Paradise Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .booking-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .step-indicator {
+            position: relative;
+        }
+        
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100px;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        
+        .step-indicator.active::after {
+            background: #667eea;
+        }
+        
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        
+        .room-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .room-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .room-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .date-picker {
+            position: relative;
+        }
+        
+        .calendar-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 50;
+            display: none;
+        }
+        
+        .calendar-popup.active {
+            display: block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .price-breakdown {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 1.5rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-animation {
+            animation: successPulse 0.6s ease-out;
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .navbar {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media (max-width: 768px) {
+            .booking-card {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+            
+            .step-indicator::after {
+                width: 50px;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="navbar fixed w-full top-0 z-40 px-4 py-3">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <i class="fas fa-umbrella-beach text-white"></i>
+                </div>
+                <span class="text-2xl font-bold gradient-text">Paradise Resort</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                    <i class="fas fa-home mr-2"></i>กลับหน้าหลัก
+                </a>
+                <button onclick="showHelp()" class="text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="booking-bg pt-20 pb-10">
+        <div class="container mx-auto px-4">
+            <!-- Progress Steps -->
+            <div class="flex justify-center mb-8">
+                <div class="flex items-center space-x-4 md:space-x-8">
+                    <div class="step-indicator active flex items-center">
+                        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mr-3">1</div>
+                        <span class="text-white font-medium hidden md:block">เลือกห้องพัก</span>
+                    </div>
+                    <div class="step-indicator flex items-center">
+                        <div class="w-10 h-10 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold mr-3">2</div>
+                        <span class="text-white font-medium hidden md:block">ข้อมูลการจอง</span>
+                    </div>
+                    <div class="step-indicator flex items-center">
+                        <div class="w-10 h-10 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold mr-3">3</div>
+                        <span class="text-white font-medium hidden md:block">ยืนยันการจอง</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Card -->
+            <div class="booking-card max-w-6xl mx-auto">
+                <!-- Step 1: Room Selection -->
+                <div id="step1" class="step-content p-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">เลือกห้องพักที่คุณต้องการ</h2>
+                    
+                    <!-- Date Selection -->
+                    <div class="bg-gray-50 rounded-15 p-6 mb-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">เลือกวันที่เข้าพัก</h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">วันที่เช็คอิน</label>
+                                <input type="date" id="checkinDate" class="form-input" onchange="updateAvailability()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">วันที่เช็คเอาท์</label>
+                                <input type="date" id="checkoutDate" class="form-input" onchange="updateAvailability()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">จำนวนผู้เข้าพัก</label>
+                                <select id="guestCount" class="form-input" onchange="updateAvailability()">
+                                    <option value="1">1 ท่าน</option>
+                                    <option value="2" selected>2 ท่าน</option>
+                                    <option value="3">3 ท่าน</option>
+                                    <option value="4">4 ท่าน</option>
+                                    <option value="5">5+ ท่าน</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4">
+                            <span id="nightCount" class="text-lg font-semibold text-blue-600">0 คืน</span>
+                        </div>
+                    </div>
+
+                    <!-- Room Options -->
+                    <div class="grid md:grid-cols-3 gap-6" id="roomOptions">
+                        <!-- Deluxe Room -->
+                        <div class="room-card bg-white rounded-15 p-6 border-2" onclick="selectRoom('deluxe', 3500)">
+                            <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 rounded-10 mb-4 relative overflow-hidden">
+                                <div class="absolute inset-0 flex items-center justify-center text-white text-4xl">🏖️</div>
+                                <div class="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    ยอดนิยม
+                                </div>
+                                <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                                    <span id="deluxe-availability">ว่าง 5 ห้อง</span>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Deluxe Ocean View</h3>
+                            <p class="text-gray-600 mb-4">ห้องพักหรูพร้อมวิวทะเลสุดงาม เตียงคิงไซส์ และระเบียงส่วนตัว</p>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-blue-600">฿3,500</div>
+                                <div class="text-gray-500">/ คืน</div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-bed mr-2 text-blue-500"></i>
+                                    <span>เตียงคิงไซส์</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-wifi mr-2 text-blue-500"></i>
+                                    <span>WiFi ฟรี</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-swimming-pool mr-2 text-blue-500"></i>
+                                    <span>เข้าสระว่ายน้ำได้</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <span class="room-selected-indicator hidden text-blue-600 font-bold">
+                                    <i class="fas fa-check-circle mr-2"></i>เลือกแล้ว
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Suite Room -->
+                        <div class="room-card bg-white rounded-15 p-6 border-2" onclick="selectRoom('suite', 8500)">
+                            <div class="h-48 bg-gradient-to-br from-purple-500 to-pink-500 rounded-10 mb-4 relative overflow-hidden">
+                                <div class="absolute inset-0 flex items-center justify-center text-white text-4xl">🏨</div>
+                                <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    พรีเมียม
+                                </div>
+                                <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                                    <span id="suite-availability">ว่าง 2 ห้อง</span>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Presidential Suite</h3>
+                            <p class="text-gray-600 mb-4">สวีทหรูระดับประธานาธิบดี พร้อมห้องนั่งเล่นและจากุซซี่ส่วนตัว</p>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-blue-600">฿8,500</div>
+                                <div class="text-gray-500">/ คืน</div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-home mr-2 text-blue-500"></i>
+                                    <span>2 ห้องนอน</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-hot-tub mr-2 text-blue-500"></i>
+                                    <span>จากุซซี่ส่วนตัว</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-concierge-bell mr-2 text-blue-500"></i>
+                                    <span>บริการส่วนตัว 24 ชม.</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <span class="room-selected-indicator hidden text-blue-600 font-bold">
+                                    <i class="fas fa-check-circle mr-2"></i>เลือกแล้ว
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Standard Room -->
+                        <div class="room-card bg-white rounded-15 p-6 border-2" onclick="selectRoom('standard', 2200)">
+                            <div class="h-48 bg-gradient-to-br from-green-500 to-teal-500 rounded-10 mb-4 relative overflow-hidden">
+                                <div class="absolute inset-0 flex items-center justify-center text-white text-4xl">🌴</div>
+                                <div class="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    คุ้มค่า
+                                </div>
+                                <div class="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                                    <span id="standard-availability">ว่าง 8 ห้อง</span>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Garden View Standard</h3>
+                            <p class="text-gray-600 mb-4">ห้องพักมาตรฐานวิวสวน สะดวกสบาย เหมาะสำหรับครอบครัว</p>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-blue-600">฿2,200</div>
+                                <div class="text-gray-500">/ คืน</div>
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-bed mr-2 text-blue-500"></i>
+                                    <span>เตียงแฝด</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-tree mr-2 text-blue-500"></i>
+                                    <span>วิวสวนสวย</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-coffee mr-2 text-blue-500"></i>
+                                    <span>เครื่องชงกาแฟ</span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <span class="room-selected-indicator hidden text-blue-600 font-bold">
+                                    <i class="fas fa-check-circle mr-2"></i>เลือกแล้ว
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Continue Button -->
+                    <div class="text-center mt-8">
+                        <button id="continueStep1" class="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed" disabled onclick="goToStep(2)">
+                            ดำเนินการต่อ <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Booking Information -->
+                <div id="step2" class="step-content p-8 hidden">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">ข้อมูลการจอง</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Guest Information -->
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">ข้อมูลผู้เข้าพัก</h3>
+                            <form id="guestForm">
+                                <div class="form-group">
+                                    <label class="form-label">ชื่อ *</label>
+                                    <input type="text" id="firstName" class="form-input" required>
+                                    <div class="error-message">กรุณากรอกชื่อ</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">นามสกุล *</label>
+                                    <input type="text" id="lastName" class="form-input" required>
+                                    <div class="error-message">กรุณากรอกนามสกุล</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">อีเมล *</label>
+                                    <input type="email" id="email" class="form-input" required>
+                                    <div class="error-message">กรุณากรอกอีเมลที่ถูกต้อง</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">เบอร์โทรศัพท์ *</label>
+                                    <input type="tel" id="phone" class="form-input" required>
+                                    <div class="error-message">กรุณากรอกเบอร์โทรศัพท์</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">เลขบัตรประชาชน *</label>
+                                    <input type="text" id="idCard" class="form-input" maxlength="13" required>
+                                    <div class="error-message">กรุณากรอกเลขบัตรประชาชน 13 หลัก</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">ที่อยู่</label>
+                                    <textarea id="address" class="form-input" rows="3" placeholder="ที่อยู่สำหรับจัดส่งใบเสร็จ (ถ้าต้องการ)"></textarea>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Booking Summary -->
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">สรุปการจอง</h3>
+                            <div class="price-breakdown">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>ประเภทห้อง:</span>
+                                        <span id="selectedRoomName" class="font-semibold">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>วันที่เข้าพัก:</span>
+                                        <span id="bookingDates" class="font-semibold">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>จำนวนคืน:</span>
+                                        <span id="totalNights" class="font-semibold">0 คืน</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>จำนวนผู้เข้าพัก:</span>
+                                        <span id="totalGuests" class="font-semibold">0 ท่าน</span>
+                                    </div>
+                                    <hr class="my-3">
+                                    <div class="flex justify-between">
+                                        <span>ราคาห้องพัก:</span>
+                                        <span id="roomPrice" class="font-semibold">฿0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>ภาษีและค่าบริการ (10%):</span>
+                                        <span id="taxPrice" class="font-semibold">฿0</span>
+                                    </div>
+                                    <hr class="my-3">
+                                    <div class="flex justify-between text-lg font-bold text-blue-600">
+                                        <span>ราคารวม:</span>
+                                        <span id="totalPrice">฿0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Requests -->
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-800 mb-3">ความต้องการพิเศษ</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="earlyCheckin" class="mr-2">
+                                        <span>เช็คอินเร็ว (ก่อน 14:00) +฿500</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="lateCheckout" class="mr-2">
+                                        <span>เช็คเอาท์สาย (หลัง 12:00) +฿500</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="airportTransfer" class="mr-2">
+                                        <span>รับส่งสนามบิน +฿800</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="extraBed" class="mr-2">
+                                        <span>เตียงเสริม +฿300/คืน</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <label class="form-label">หมายเหตุเพิ่มเติม</label>
+                                    <textarea id="specialNote" class="form-input" rows="3" placeholder="ระบุความต้องการพิเศษอื่นๆ"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between mt-8">
+                        <button class="btn-secondary px-6 py-3" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left mr-2"></i>ย้อนกลับ
+                        </button>
+                        <button id="continueStep2" class="btn-primary px-8 py-3" onclick="validateAndContinue()">
+                            ดำเนินการต่อ <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirmation -->
+                <div id="step3" class="step-content p-8 hidden">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">ยืนยันการจอง</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Final Summary -->
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">สรุปการจองขั้นสุดท้าย</h3>
+                            <div class="bg-gray-50 rounded-15 p-6">
+                                <div class="space-y-3">
+                                    <h4 class="font-bold text-gray-800">ข้อมูลผู้เข้าพัก</h4>
+                                    <div class="text-gray-600">
+                                        <p id="finalGuestName">-</p>
+                                        <p id="finalGuestEmail">-</p>
+                                        <p id="finalGuestPhone">-</p>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <h4 class="font-bold text-gray-800">รายละเอียดการจอง</h4>
+                                    <div class="text-gray-600">
+                                        <p id="finalRoomType">-</p>
+                                        <p id="finalDates">-</p>
+                                        <p id="finalGuests">-</p>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <div class="text-lg font-bold text-blue-600">
+                                        <p>ราคารวมทั้งหมด: <span id="finalTotalPrice">฿0</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">วิธีการชำระเงิน</h3>
+                            <div class="space-y-4">
+                                <label class="flex items-center p-4 border-2 border-gray-200 rounded-10 cursor-pointer hover:border-blue-500">
+                                    <input type="radio" name="paymentMethod" value="credit" class="mr-3" checked>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-credit-card text-blue-500 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-semibold">บัตรเครดิต/เดบิต</div>
+                                            <div class="text-sm text-gray-500">Visa, MasterCard, JCB</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center p-4 border-2 border-gray-200 rounded-10 cursor-pointer hover:border-blue-500">
+                                    <input type="radio" name="paymentMethod" value="bank" class="mr-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-university text-green-500 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-semibold">โอนเงินผ่านธนาคาร</div>
+                                            <div class="text-sm text-gray-500">ชำระภายใน 24 ชั่วโมง</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center p-4 border-2 border-gray-200 rounded-10 cursor-pointer hover:border-blue-500">
+                                    <input type="radio" name="paymentMethod" value="promptpay" class="mr-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-mobile-alt text-purple-500 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-semibold">PromptPay</div>
+                                            <div class="text-sm text-gray-500">สแกน QR Code</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center p-4 border-2 border-gray-200 rounded-10 cursor-pointer hover:border-blue-500">
+                                    <input type="radio" name="paymentMethod" value="counter" class="mr-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-store text-orange-500 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-semibold">ชำระที่เคาน์เตอร์</div>
+                                            <div class="text-sm text-gray-500">ชำระเมื่อเช็คอิน</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mt-6">
+                                <label class="flex items-start">
+                                    <input type="checkbox" id="acceptTerms" class="mr-3 mt-1" required>
+                                    <span class="text-sm text-gray-600">
+                                        ฉันยอมรับ <a href="#" class="text-blue-600 hover:underline">ข้อกำหนดและเงื่อนไข</a> 
+                                        และ <a href="#" class="text-blue-600 hover:underline">นโยบายความเป็นส่วนตัว</a> 
+                                        ของ Paradise Resort
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between mt-8">
+                        <button class="btn-secondary px-6 py-3" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-left mr-2"></i>ย้อนกลับ
+                        </button>
+                        <button id="confirmBooking" class="btn-primary px-8 py-3" onclick="confirmBooking()">
+                            <i class="fas fa-check mr-2"></i>ยืนยันการจอง
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="step-content p-8 hidden text-center">
+                    <div class="success-animation">
+                        <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-check text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4">จองสำเร็จ!</h2>
+                        <p class="text-xl text-gray-600 mb-6">
+                            ขอบคุณที่เลือกใช้บริการ Paradise Resort<br>
+                            หมายเลขการจอง: <span id="bookingNumber" class="font-bold text-blue-600">#PR2024001</span>
+                        </p>
+                        <div class="bg-blue-50 rounded-15 p-6 mb-6 text-left max-w-md mx-auto">
+                            <h4 class="font-bold text-gray-800 mb-3">ขั้นตอนต่อไป:</h4>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center">
+                                    <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                                    ตรวจสอบอีเมลยืนยันการจอง
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-credit-card text-blue-500 mr-2"></i>
+                                    ชำระเงินตามวิธีที่เลือก
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-suitcase text-blue-500 mr-2"></i>
+                                    เตรียมตัวสำหรับการเดินทาง
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="space-x-4">
+                            <button class="btn-primary px-6 py-3" onclick="printBooking()">
+                                <i class="fas fa-print mr-2"></i>พิมพ์ใบจอง
+                            </button>
+                            <a href="index.html" class="btn-secondary px-6 py-3 inline-block">
+                                <i class="fas fa-home mr-2"></i>กลับหน้าหลัก
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center text-white">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-lg">กำลังดำเนินการ...</p>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-20 p-8 max-w-md w-full">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-question text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800">ต้องการความช่วยเหลือ?</h3>
+            </div>
+            <div class="space-y-4 text-gray-600">
+                <div class="flex items-center">
+                    <i class="fas fa-phone text-blue-500 mr-3"></i>
+                    <span>โทร: 077-123-456</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-envelope text-blue-500 mr-3"></i>
+                    <span>อีเมล: booking@paradiseresort.com</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-blue-500 mr-3"></i>
+                    <span>เวลาทำการ: 24 ชั่วโมง</span>
+                </div>
+            </div>
+            <div class="text-center mt-6">
+                <button class="btn-primary px-6 py-2" onclick="closeHelp()">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Global variables
+        let selectedRoom = null;
+        let selectedRoomPrice = 0;
+        let bookingData = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDates();
+            updateAvailability();
+            setupEventListeners();
+        });
+
+        function initializeDates() {
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('checkinDate').value = today.toISOString().split('T')[0];
+            document.getElementById('checkoutDate').value = tomorrow.toISOString().split('T')[0];
+            
+            // Set minimum dates
+            document.getElementById('checkinDate').min = today.toISOString().split('T')[0];
+            document.getElementById('checkoutDate').min = tomorrow.toISOString().split('T')[0];
+        }
+
+        function setupEventListeners() {
+            // Special requests checkboxes
+            const checkboxes = ['earlyCheckin', 'lateCheckout', 'airportTransfer', 'extraBed'];
+            checkboxes.forEach(id => {
+                document.getElementById(id).addEventListener('change', updatePriceSummary);
+            });
+
+            // Form validation
+            const inputs = ['firstName', 'lastName', 'email', 'phone', 'idCard'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('blur', validateField);
+            });
+        }
+
+        function updateAvailability() {
+            const checkin = document.getElementById('checkinDate').value;
+            const checkout = document.getElementById('checkoutDate').value;
+            
+            if (checkin && checkout) {
+                const nights = calculateNights(checkin, checkout);
+                document.getElementById('nightCount').textContent = `${nights} คืน`;
+                
+                // Simulate availability check
+                const availability = {
+                    deluxe: Math.floor(Math.random() * 8) + 1,
+                    suite: Math.floor(Math.random() * 3) + 1,
+                    standard: Math.floor(Math.random() * 10) + 1
+                };
+                
+                document.getElementById('deluxe-availability').textContent = `ว่าง ${availability.deluxe} ห้อง`;
+                document.getElementById('suite-availability').textContent = `ว่าง ${availability.suite} ห้อง`;
+                document.getElementById('standard-availability').textContent = `ว่าง ${availability.standard} ห้อง`;
+            }
+        }
+
+        function calculateNights(checkin, checkout) {
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            const timeDiff = checkoutDate.getTime() - checkinDate.getTime();
+            return Math.ceil(timeDiff / (1000 * 3600 * 24));
+        }
+
+        function selectRoom(roomType, price) {
+            // Remove previous selection
+            document.querySelectorAll('.room-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('.room-selected-indicator').classList.add('hidden');
+            });
+            
+            // Add selection to clicked room
+            event.currentTarget.classList.add('selected');
+            event.currentTarget.querySelector('.room-selected-indicator').classList.remove('hidden');
+            
+            selectedRoom = roomType;
+            selectedRoomPrice = price;
+            
+            // Enable continue button
+            document.getElementById('continueStep1').disabled = false;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            
+            // Update progress indicators
+            updateProgressIndicators(step);
+            
+            // Update summary if going to step 2 or 3
+            if (step >= 2) {
+                updateBookingSummary();
+            }
+            
+            if (step === 3) {
+                updateFinalSummary();
+            }
+        }
+
+        function updateProgressIndicators(currentStep) {
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                const circle = indicator.querySelector('div');
+                
+                if (stepNumber <= currentStep) {
+                    circle.classList.remove('bg-gray-400');
+                    circle.classList.add('bg-blue-600');
+                    indicator.classList.add('active');
+                } else {
+                    circle.classList.remove('bg-blue-600');
+                    circle.classList.add('bg-gray-400');
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+
+        function updateBookingSummary() {
+            const checkin = document.getElementById('checkinDate').value;
+            const checkout = document.getElementById('checkoutDate').value;
+            const guests = document.getElementById('guestCount').value;
+            const nights = calculateNights(checkin, checkout);
+            
+            const roomNames = {
+                deluxe: 'Deluxe Ocean View',
+                suite: 'Presidential Suite',
+                standard: 'Garden View Standard'
+            };
+            
+            document.getElementById('selectedRoomName').textContent = roomNames[selectedRoom] || '-';
+            document.getElementById('bookingDates').textContent = `${formatDate(checkin)} - ${formatDate(checkout)}`;
+            document.getElementById('totalNights').textContent = `${nights} คืน`;
+            document.getElementById('totalGuests').textContent = `${guests} ท่าน`;
+            
+            updatePriceSummary();
+        }
+
+        function updatePriceSummary() {
+            const checkin = document.getElementById('checkinDate').value;
+            const checkout = document.getElementById('checkoutDate').value;
+            const nights = calculateNights(checkin, checkout);
+            
+            let roomTotal = selectedRoomPrice * nights;
+            let extras = 0;
+            
+            // Calculate extras
+            if (document.getElementById('earlyCheckin')?.checked) extras += 500;
+            if (document.getElementById('lateCheckout')?.checked) extras += 500;
+            if (document.getElementById('airportTransfer')?.checked) extras += 800;
+            if (document.getElementById('extraBed')?.checked) extras += 300 * nights;
+            
+            const subtotal = roomTotal + extras;
+            const tax = Math.round(subtotal * 0.1);
+            const total = subtotal + tax;
+            
+            document.getElementById('roomPrice').textContent = `฿${roomTotal.toLocaleString()}`;
+            document.getElementById('taxPrice').textContent = `฿${tax.toLocaleString()}`;
+            document.getElementById('totalPrice').textContent = `฿${total.toLocaleString()}`;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                locale: 'th-TH'
+            };
+            return date.toLocaleDateString('th-TH', options);
+        }
+
+        function validateField(event) {
+            const field = event.target;
+            const errorDiv = field.parentNode.querySelector('.error-message');
+            let isValid = true;
+            
+            switch(field.id) {
+                case 'firstName':
+                case 'lastName':
+                    isValid = field.value.trim().length > 0;
+                    break;
+                case 'email':
+                    isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value);
+                    break;
+                case 'phone':
+                    isValid = /^[0-9]{9,10}$/.test(field.value.replace(/[-\s]/g, ''));
+                    break;
+                case 'idCard':
+                    isValid = /^[0-9]{13}$/.test(field.value);
+                    break;
+            }
+            
+            if (isValid) {
+                field.classList.remove('border-red-500');
+                errorDiv.style.display = 'none';
+            } else {
+                field.classList.add('border-red-500');
+                errorDiv.style.display = 'block';
+            }
+            
+            return isValid;
+        }
+
+        function validateAndContinue() {
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'idCard'];
+            let allValid = true;
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!validateField({target: field})) {
+                    allValid = false;
+                }
+            });
+            
+            if (allValid) {
+                goToStep(3);
+            } else {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
+            }
+        }
+
+        function updateFinalSummary() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            
+            document.getElementById('finalGuestName').textContent = `${firstName} ${lastName}`;
+            document.getElementById('finalGuestEmail').textContent = email;
+            document.getElementById('finalGuestPhone').textContent = phone;
+            
+            const roomNames = {
+                deluxe: 'Deluxe Ocean View',
+                suite: 'Presidential Suite',
+                standard: 'Garden View Standard'
+            };
+            
+            const checkin = document.getElementById('checkinDate').value;
+            const checkout = document.getElementById('checkoutDate').value;
+            const guests = document.getElementById('guestCount').value;
+            
+            document.getElementById('finalRoomType').textContent = roomNames[selectedRoom];
+            document.getElementById('finalDates').textContent = `${formatDate(checkin)} - ${formatDate(checkout)}`;
+            document.getElementById('finalGuests').textContent = `${guests} ท่าน`;
+            document.getElementById('finalTotalPrice').textContent = document.getElementById('totalPrice').textContent;
+        }
+
+        function confirmBooking() {
+            const acceptTerms = document.getElementById('acceptTerms').checked;
+            
+            if (!acceptTerms) {
+                alert('กรุณายอมรับข้อกำหนดและเงื่อนไขก่อนดำเนินการ');
+                return;
+            }
+            
+            showLoading();
+            
+            // Simulate booking process
+            setTimeout(() => {
+                hideLoading();
+                
+                // Generate booking number
+                const bookingNumber = 'PR' + new Date().getFullYear() + 
+                                   String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+                document.getElementById('bookingNumber').textContent = '#' + bookingNumber;
+                
+                // Show success message
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById('successMessage').classList.remove('hidden');
+                
+                // Send confirmation email (simulation)
+                console.log('Booking confirmed:', {
+                    bookingNumber,
+                    room: selectedRoom,
+                    guest: {
+                        name: document.getElementById('firstName').value + ' ' + document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value
+                    },
+                    dates: {
+                        checkin: document.getElementById('checkinDate').value,
+                        checkout: document.getElementById('checkoutDate').value
+                    },
+                    total: document.getElementById('totalPrice').textContent
+                });
+                
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        function printBooking() {
+            window.print();
+        }
+
+        // Auto-update checkout date when checkin changes
+        document.getElementById('checkinDate').addEventListener('change', function() {
+            const checkinDate = new Date(this.value);
+            const checkoutDate = new Date(checkinDate);
+            checkoutDate.setDate(checkoutDate.getDate() + 1);
+            
+            document.getElementById('checkoutDate').min = checkoutDate.toISOString().split('T')[0];
+            
+            if (document.getElementById('checkoutDate').value <= this.value) {
+                document.getElementById('checkoutDate').value = checkoutDate.toISOString().split('T')[0];
+            }
+            
+            updateAvailability();
+        });
+
+        // Format ID card input
+        document.getElementById('idCard').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 13);
+        });
+
+        // Format phone input
+        document.getElementById('phone').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 10);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98119199d42af8ec',t:'MTc1ODIwNjExNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
