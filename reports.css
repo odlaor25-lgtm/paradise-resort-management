@@ -1,0 +1,692 @@
+﻿/* Paradise Resort - Reports Styles */
+/* Canva-inspired reporting interface */
+
+.reports-bg {
+    background: linear-gradient(135deg, #F0F4F8 0%, #E6FFFA 50%, #FFF5F5 100%);
+    min-height: 100vh;
+}
+
+.reports-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Report Header */
+.reports-header {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+}
+
+.reports-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, var(--canva-blue) 0%, var(--canva-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+}
+
+.reports-subtitle {
+    color: var(--canva-gray);
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+/* Filter Section */
+.reports-filters {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+}
+
+.filters-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--canva-dark);
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.filters-title i {
+    margin-right: 0.5rem;
+    color: var(--canva-blue);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: var(--canva-dark);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-input,
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid rgba(0, 196, 204, 0.2);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--canva-blue);
+    box-shadow: 0 0 0 3px rgba(0, 196, 204, 0.1);
+}
+
+.filters-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-btn.primary {
+    background: linear-gradient(135deg, var(--canva-blue) 0%, var(--canva-purple) 100%);
+    color: white;
+}
+
+.filter-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 196, 204, 0.3);
+}
+
+.filter-btn.secondary {
+    background: rgba(0, 196, 204, 0.1);
+    color: var(--canva-blue);
+    border: 1px solid rgba(0, 196, 204, 0.3);
+}
+
+.filter-btn.secondary:hover {
+    background: rgba(0, 196, 204, 0.2);
+}
+
+/* Summary Cards */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.summary-card.revenue::before {
+    background: linear-gradient(135deg, var(--canva-green) 0%, var(--canva-blue) 100%);
+}
+
+.summary-card.bookings::before {
+    background: linear-gradient(135deg, var(--canva-blue) 0%, var(--canva-purple) 100%);
+}
+
+.summary-card.occupancy::before {
+    background: linear-gradient(135deg, var(--canva-purple) 0%, var(--canva-pink) 100%);
+}
+
+.summary-card.customers::before {
+    background: linear-gradient(135deg, var(--canva-orange) 0%, var(--canva-yellow) 100%);
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 196, 204, 0.15);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.summary-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.summary-icon.revenue {
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, rgba(0, 196, 204, 0.1) 100%);
+    color: var(--canva-green);
+}
+
+.summary-icon.bookings {
+    background: linear-gradient(135deg, rgba(0, 196, 204, 0.1) 0%, rgba(123, 104, 238, 0.1) 100%);
+    color: var(--canva-blue);
+}
+
+.summary-icon.occupancy {
+    background: linear-gradient(135deg, rgba(123, 104, 238, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
+    color: var(--canva-purple);
+}
+
+.summary-icon.customers {
+    background: linear-gradient(135deg, rgba(255, 138, 101, 0.1) 0%, rgba(255, 217, 61, 0.1) 100%);
+    color: var(--canva-orange);
+}
+
+.summary-info h3 {
+    color: var(--canva-gray);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--canva-dark);
+    margin: 0 0 0.5rem 0;
+}
+
+.summary-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.summary-change.positive {
+    color: var(--canva-green);
+}
+
+.summary-change.negative {
+    color: var(--canva-pink);
+}
+
+.summary-change.neutral {
+    color: var(--canva-yellow);
+}
+
+.summary-change i {
+    margin-right: 0.25rem;
+}
+
+/* Chart Sections */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.chart-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--canva-dark);
+    margin: 0;
+}
+
+.chart-period {
+    background: rgba(0, 196, 204, 0.1);
+    color: var(--canva-blue);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 196, 204, 0.2);
+}
+
+.chart-container {
+    height: 400px;
+    position: relative;
+}
+
+.chart-container canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Data Tables */
+.data-table-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+    margin-bottom: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.table-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--canva-dark);
+    margin: 0;
+}
+
+.table-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.table-search {
+    padding: 0.5rem 1rem;
+    border: 2px solid rgba(0, 196, 204, 0.2);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    width: 250px;
+}
+
+.table-search:focus {
+    outline: none;
+    border-color: var(--canva-blue);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, var(--canva-green) 0%, var(--canva-blue) 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+}
+
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.reports-table th {
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--canva-dark);
+    border-bottom: 2px solid rgba(0, 196, 204, 0.1);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.reports-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #F3F4F6;
+    color: var(--canva-gray);
+}
+
+.reports-table tr:hover {
+    background: rgba(0, 196, 204, 0.02);
+}
+
+.reports-table tr:nth-child(even) {
+    background: rgba(0, 196, 204, 0.01);
+}
+
+/* Performance Indicators */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 196, 204, 0.1);
+    border: 1px solid rgba(0, 196, 204, 0.1);
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 196, 204, 0.15);
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value.excellent {
+    color: var(--canva-green);
+}
+
+.kpi-value.good {
+    color: var(--canva-blue);
+}
+
+.kpi-value.average {
+    color: var(--canva-yellow);
+}
+
+.kpi-value.poor {
+    color: var(--canva-pink);
+}
+
+.kpi-label {
+    color: var(--canva-gray);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Export Options */
+.export-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.export-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 196, 204, 0.2);
+}
+
+.export-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--canva-dark);
+    margin: 0 0 1.5rem 0;
+}
+
+.export-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.export-option {
+    background: rgba(0, 196, 204, 0.1);
+    border: 2px solid rgba(0, 196, 204, 0.2);
+    border-radius: 15px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.export-option:hover {
+    background: rgba(0, 196, 204, 0.2);
+    border-color: var(--canva-blue);
+}
+
+.export-option.selected {
+    background: var(--canva-blue);
+    color: white;
+    border-color: var(--canva-blue);
+}
+
+.export-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .reports-container {
+        padding: 1rem;
+    }
+    
+    .reports-header,
+    .reports-filters,
+    .chart-card,
+    .data-table-section {
+        padding: 1.5rem;
+    }
+    
+    .reports-title {
+        font-size: 2rem;
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filters-actions {
+        justify-content: stretch;
+    }
+    
+    .filter-btn {
+        flex: 1;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .table-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .reports-header,
+    .reports-filters,
+    .chart-card,
+    .data-table-section {
+        padding: 1rem;
+    }
+    
+    .reports-title {
+        font-size: 1.75rem;
+    }
+    
+    .summary-card {
+        padding: 1.5rem;
+    }
+    
+    .summary-value {
+        font-size: 1.75rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .reports-table th,
+    .reports-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .reports-bg {
+        background: white;
+    }
+    
+    .reports-filters,
+    .filters-actions,
+    .table-actions {
+        display: none;
+    }
+    
+    .chart-card,
+    .data-table-section,
+    .summary-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+    
+    .reports-table {
+        font-size: 0.75rem;
+    }
+    
+    .reports-table th,
+    .reports-table td {
+        padding: 0.5rem;
+    }
+}
+
+/* Loading States */
+.reports-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--canva-gray);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 196, 204, 0.2);
+    border-top: 4px solid var(--canva-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+/* Empty States */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--canva-gray);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: rgba(0, 196, 204, 0.3);
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    font-size: 0.875rem;
+}
