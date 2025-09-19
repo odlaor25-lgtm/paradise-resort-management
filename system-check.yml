@@ -1,0 +1,28 @@
+name: System Check with Gemini
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  check-system:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install @google/generative-ai
+
+      - name: Run system check
+        run: node .github/scripts/system-check.js
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
